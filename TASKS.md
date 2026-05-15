@@ -95,7 +95,7 @@
 ## Phase 12 — Semantic Layer
 - `[ ]` Related words panel
   - Benzer anlamlı veya yakın kelimeler kelime detayında gösterilir
-- `[ ]` Better distractors
+- `[x]` Better distractors
   - Quiz seçenekleri rastgele yerine semantik olarak yakın adaylardan seçilir
 - `[ ]` Semantic search
   - Tanım benzerliğine göre arama sonuçları zenginleştirilir
@@ -110,4 +110,4 @@
 - `3.` Örnek cümle desteği
 - `4.` Günlük hedefler
 - `5.` Progress export/import
-- `6.` Semantic layer başlangıcı: better distractors + related words
+- `6.` Semantic layer devamı: related words + semantic search

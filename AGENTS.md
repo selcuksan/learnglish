@@ -50,6 +50,7 @@ make test
 - Quiz progression bug has already been fixed and covered by frontend tests.
 - Mistake notebook flow is implemented and backed by local progress fields.
 - Daily goals are implemented using enriched `sessionHistory` records.
+- Quiz distractors now use semantic similarity scoring instead of pure random picks.
 - `TASKS.md` is the source of truth for implementation order and progress tracking.
 
 ## Next Priority Features
@@ -57,7 +58,6 @@ make test
 - Progress export/import
 - Typed quiz
 - Early semantic layer:
-  - better distractors
   - related words
   - semantic search
 

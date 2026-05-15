@@ -10,6 +10,7 @@ Learnglish, NGSL tabanlı İngilizce kelime çiftlerini kullanarak düzenli tekr
 - Quiz içinde `definition -> word` ve `word -> definition` modları ayrı ayrı sunuluyor
 - Yanlış cevaplanan kelimeler için ayrı `Mistakes` çalışma yüzeyi var
 - Günlük review ve new word hedefleri dashboard ile settings arasında bağlı çalışıyor
+- Quiz distractor seçenekleri artık definition benzerliğine göre daha yakın adaylardan seçiliyor
 - Uygulama tek Go server üzerinden servis edilebiliyor
 
 ## Amaç
@@ -70,7 +71,7 @@ Bu modda `Vite`, `/api` isteklerini `localhost:8080` adresine proxy eder.
 - Örnek cümle desteği
 - Progress export/import
 - Yazmalı quiz
-- Daha sonra: semantik distractor, related words, semantic search
+- Daha sonra: related words, semantic search
 
 ## Kapsam Dışı
 - Auth

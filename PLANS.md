@@ -38,6 +38,7 @@
 - Quiz iki ayrı yönle çalışıyor: `definition -> word` ve `word -> definition`
 - Hata defteri eklendi ve yanlış cevap havuzu ayrı bir review akışına bağlandı
 - Günlük hedefler eklendi; session history üzerinden günlük review/new progress hesaplanıyor
+- Better distractors eklendi; quiz yanlış şıkları artık definition similarity ağırlıklı seçiliyor
 - Sonraki geliştirme dalgası öğrenme kalitesini yükseltecek özelliklere ayrıldı
 
 ## Next Feature Wave
@@ -46,7 +47,6 @@
 - Yazmalı quiz
 - Semantic layer başlangıcı:
   - related words
-  - better distractors
   - semantic search
 
 ## Defaults and Assumptions

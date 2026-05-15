@@ -1,15 +1,9 @@
 import { useEffect, useState } from "react";
 
 import { SectionHeader } from "../components/SectionHeader";
-import { getDueWords, getNewWords } from "../lib/spacedRepetition";
-import { randomItems } from "../lib/utils";
+import { buildQuizSource, createQuiz, type QuizCard } from "../lib/quiz";
 import { useWords } from "../state/WordsProvider";
-import type { QuizMode, StudyProgress, Word } from "../types";
-
-type QuizCard = {
-  prompt: Word;
-  options: Word[];
-};
+import type { QuizMode } from "../types";
 
 const modeCopy: Record<
   QuizMode,
@@ -31,30 +25,6 @@ const modeCopy: Record<
     optionLabel: "Definition",
   },
 };
-
-function createQuiz(words: Word[], allWords: Word[], size: number): QuizCard[] {
-  return words.slice(0, size).map((word) => {
-    const distractors = randomItems(
-      allWords.filter((candidate) => candidate.id !== word.id),
-      3,
-    );
-    const options = randomItems([word, ...distractors], 4);
-    return { prompt: word, options };
-  });
-}
-
-function buildQuizSource(deck: Word[], studyProgress: StudyProgress) {
-  const dueWords = getDueWords(deck, studyProgress);
-  const newWords = getNewWords(deck, studyProgress);
-  const dueIDs = new Set(dueWords.map((word) => word.id));
-  const randomizedDueWords = randomItems(dueWords, dueWords.length);
-  const randomizedNewWords = randomItems(
-    newWords.filter((word) => !dueIDs.has(word.id)),
-    newWords.length,
-  );
-
-  return [...randomizedDueWords, ...randomizedNewWords].slice(0, 24);
-}
 
 export function QuizPage() {
   const {

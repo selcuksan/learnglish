@@ -24,12 +24,6 @@ vi.mock("../state/WordsProvider", () => ({
 
 const deck: Word[] = [
   {
-    id: 1,
-    word: "habit",
-    definition: "the usual way of behaving",
-    slug: "habit",
-  },
-  {
     id: 2,
     word: "abuse",
     definition: "to treat someone cruelly",
@@ -52,6 +46,12 @@ const deck: Word[] = [
     word: "benefit",
     definition: "an advantage or helpful effect",
     slug: "benefit",
+  },
+  {
+    id: 1,
+    word: "habit",
+    definition: "the usual way of behaving",
+    slug: "habit",
   },
 ];
 
@@ -121,7 +121,7 @@ describe("QuizPage", () => {
 
     render(<QuizPage />);
 
-    await user.click(screen.getByRole("button", { name: /word abuse/i }));
+    await user.click(screen.getByRole("button", { name: /word benefit/i }));
     expect(updateWordProgress).toHaveBeenCalledWith(1, "again");
 
     await user.click(screen.getByRole("button", { name: "Next question" }));
@@ -166,11 +166,36 @@ describe("QuizPage", () => {
 
   it("does not always start quizzes from the alphabetically first new words", () => {
     const shuffledDeck: Word[] = [
-      { id: 1, word: "abuse", definition: "to treat someone cruelly", slug: "abuse" },
-      { id: 2, word: "accident", definition: "a sudden unplanned event", slug: "accident" },
-      { id: 3, word: "activity", definition: "an action or task", slug: "activity" },
-      { id: 4, word: "benefit", definition: "an advantage or helpful effect", slug: "benefit" },
-      { id: 5, word: "culture", definition: "the ideas and customs of a society", slug: "culture" },
+      {
+        id: 1,
+        word: "abuse",
+        definition: "to treat someone cruelly",
+        slug: "abuse",
+      },
+      {
+        id: 2,
+        word: "accident",
+        definition: "a sudden unplanned event",
+        slug: "accident",
+      },
+      {
+        id: 3,
+        word: "activity",
+        definition: "an action or task",
+        slug: "activity",
+      },
+      {
+        id: 4,
+        word: "benefit",
+        definition: "an advantage or helpful effect",
+        slug: "benefit",
+      },
+      {
+        id: 5,
+        word: "culture",
+        definition: "the ideas and customs of a society",
+        slug: "culture",
+      },
     ];
 
     mockUseWords.mockReturnValue({
