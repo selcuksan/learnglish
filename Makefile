@@ -1,13 +1,17 @@
 SHELL := /bin/bash
 PORT ?= 8080
 
-.PHONY: import frontend-build build run stop test
+.PHONY: import frontend-build frontend-build-static build run stop test
 
 import:
 	go run ./tools/importer
 
 frontend-build:
 	cd frontend && npm run build
+
+frontend-build-static:
+	./tools/copy-static-data.sh
+	cd frontend && npm run build:static
 
 build: import frontend-build
 	go build ./backend/... ./tools/...

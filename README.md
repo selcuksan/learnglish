@@ -51,6 +51,18 @@ npm run dev
 
 Bu modda `Vite`, `/api` isteklerini `localhost:8080` adresine proxy eder.
 
+## Ücretsiz Statik Deploy
+Public GitHub repo için GitHub Pages kullanılabilir. Bu modda Go backend
+çalışmaz; frontend kelime datasını statik JSON dosyalarından okur.
+
+```bash
+make frontend-build-static
+```
+
+GitHub Pages deploy'u için repo settings içinde `Pages` kaynağını
+`GitHub Actions` olarak seç. `main` branch'e push gelince
+`.github/workflows/pages.yml` frontend'i build edip yayınlar.
+
 ## Veri Kaynağı
 - Kaynak dosya: `NGSL_1.2_with_English_definitions.xlsx`
 - Sheet: `Sheet1`
