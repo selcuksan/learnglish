@@ -6,9 +6,11 @@ import App from "./App";
 import "./index.css";
 import { WordsProvider } from "./state/WordsProvider";
 
+const routerBase = import.meta.env.BASE_URL.replace(/\/$/, "");
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter basename={import.meta.env.BASE_URL}>
+    <BrowserRouter basename={routerBase}>
       <WordsProvider>
         <App />
       </WordsProvider>
