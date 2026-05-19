@@ -1,6 +1,6 @@
 # AGENTS
 
-This file gives coding agents the minimum context needed to work effectively in this repository.
+This file gives coding agents the minimum context needed to work effectively in this repository...
 
 ## Project Shape
 - `backend/`: Go HTTP server, API routes, dataset repository, static frontend serving
