@@ -12,6 +12,7 @@ frontend-build:
 frontend-build-static:
 	./tools/copy-static-data.sh
 	cd frontend && npm run build:static
+	./tools/prepare-pages.sh
 
 build: import frontend-build
 	go build ./backend/... ./tools/...

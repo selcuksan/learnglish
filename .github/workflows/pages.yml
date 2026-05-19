@@ -41,6 +41,9 @@ jobs:
         env:
           VITE_BASE_PATH: /${{ github.event.repository.name }}/
 
+      - name: Prepare Pages fallback
+        run: ./tools/prepare-pages.sh
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:

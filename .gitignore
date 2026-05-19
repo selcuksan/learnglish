@@ -3,3 +3,6 @@ frontend/dist/
 coverage/
 .DS_Store
 
+README.md
+AGENTS.md
+TASKS.md

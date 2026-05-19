@@ -62,6 +62,7 @@ make frontend-build-static
 GitHub Pages deploy'u için repo settings içinde `Pages` kaynağını
 `GitHub Actions` olarak seç. `main` branch'e push gelince
 `.github/workflows/pages.yml` frontend'i build edip yayınlar.
+Repo alt path ve refresh için `404.html` fallback da build sırasında hazırlanır.
 
 ## Veri Kaynağı
 - Kaynak dosya: `NGSL_1.2_with_English_definitions.xlsx`

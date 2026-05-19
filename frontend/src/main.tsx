@@ -8,7 +8,7 @@ import { WordsProvider } from "./state/WordsProvider";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <WordsProvider>
         <App />
       </WordsProvider>
