@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 
+import { ExampleSentence } from "../components/ExampleSentence";
 import { SectionHeader } from "../components/SectionHeader";
-import { getMistakeWords } from "../lib/spacedRepetition";
+import { getMemoryStage, getMistakeWords } from "../lib/spacedRepetition";
 import { formatDate } from "../lib/utils";
 import { useWords } from "../state/WordsProvider";
 import type { ReviewGrade, Word } from "../types";
@@ -105,6 +106,7 @@ export function MistakesPage() {
             ) : (
               mistakeWords.slice(0, 10).map((word) => {
                 const progress = studyProgress[word.id];
+                const stage = getMemoryStage(progress?.bucket ?? 0);
                 return (
                   <div
                     key={word.id}
@@ -125,13 +127,20 @@ export function MistakesPage() {
                           {progress?.failCount === 1 ? "" : "s"}
                         </p>
                         <p className="mt-1 text-xs text-slate-500">
-                          Bucket {progress?.bucket ?? 0}
+                          {stage.label}
                         </p>
                       </div>
                     </div>
                     <p className="mt-3 text-sm leading-6 text-slate-700">
                       {word.definition}
                     </p>
+                    <p className="mt-2 text-xs font-medium uppercase tracking-[0.22em] text-slate-500">
+                      Next rhythm: {stage.detail}
+                    </p>
+                    <ExampleSentence
+                      sentence={word.exampleSentence}
+                      className="mt-3 border-slate-200/70 bg-slate-50/80 text-slate-700"
+                    />
                   </div>
                 );
               })
@@ -171,11 +180,22 @@ export function MistakesPage() {
                 <h3 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">
                   {current.word}
                 </h3>
-                <div className="mt-10 rounded-[1.4rem] bg-white/10 p-5 text-sm leading-7 text-white/86">
-                  {revealed
-                    ? current.definition
-                    : "Reveal the definition, then re-grade the card with more intention."}
-                </div>
+                {revealed ? (
+                  <div className="mt-10 space-y-4">
+                    <div className="rounded-[1.4rem] bg-white/10 p-5 text-sm leading-7 text-white/86">
+                      {current.definition}
+                    </div>
+                    <ExampleSentence
+                      sentence={current.exampleSentence}
+                      className="text-white/90"
+                    />
+                  </div>
+                ) : (
+                  <div className="mt-10 rounded-[1.4rem] bg-white/10 p-5 text-sm leading-7 text-white/86">
+                    Reveal the definition, then re-grade the card with more
+                    intention.
+                  </div>
+                )}
               </div>
 
               <div className="mt-5 flex flex-wrap gap-3">

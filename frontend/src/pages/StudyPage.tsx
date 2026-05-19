@@ -1,20 +1,61 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import { ExampleSentence } from "../components/ExampleSentence";
 import { SectionHeader } from "../components/SectionHeader";
-import { getDueWords, getNewWords } from "../lib/spacedRepetition";
+import {
+  getDueWords,
+  getMemoryStage,
+  getNewWords,
+  previewReview,
+} from "../lib/spacedRepetition";
+import { randomItems } from "../lib/utils";
 import { useWords } from "../state/WordsProvider";
-import type { ReviewGrade, Word } from "../types";
+import type { ReviewGrade, Word, WordProgress } from "../types";
 
 const reviewButtons: Array<{
   grade: ReviewGrade;
   label: string;
+  hint: string;
   className: string;
 }> = [
-  { grade: "again", label: "Again", className: "bg-rose-500 text-white" },
-  { grade: "hard", label: "Hard", className: "bg-amber-400 text-slate-950" },
-  { grade: "good", label: "Good", className: "bg-cyan-500 text-white" },
-  { grade: "easy", label: "Easy", className: "bg-emerald-500 text-white" },
+  {
+    grade: "again",
+    label: "Again",
+    hint: "I missed it",
+    className: "bg-rose-500 text-white",
+  },
+  {
+    grade: "hard",
+    label: "Hard",
+    hint: "I barely got it",
+    className: "bg-amber-400 text-slate-950",
+  },
+  {
+    grade: "good",
+    label: "Good",
+    hint: "I knew it",
+    className: "bg-cyan-500 text-white",
+  },
+  {
+    grade: "easy",
+    label: "Easy",
+    hint: "It felt automatic",
+    className: "bg-emerald-500 text-white",
+  },
 ];
+
+type LastReviewFeedback = {
+  word: string;
+  grade: ReviewGrade;
+  progress: WordProgress;
+};
+
+type StudySession = {
+  queue: Word[];
+  dueWordIDs: Set<number>;
+  newWordIDs: Set<number>;
+  dueCount: number;
+};
 
 function buildStudyQueue(
   dailyNewLimit: number,
@@ -22,9 +63,14 @@ function buildStudyQueue(
   newWords: Word[],
 ) {
   const dueIDs = new Set(dueWords.map((word) => word.id));
+  const randomizedNewWords = randomItems(
+    newWords.filter((word) => !dueIDs.has(word.id)),
+    dailyNewLimit,
+  );
+
   return [
     ...dueWords,
-    ...newWords.filter((word) => !dueIDs.has(word.id)).slice(0, dailyNewLimit),
+    ...randomizedNewWords,
   ].slice(0, 30);
 }
 
@@ -41,6 +87,10 @@ export function StudyPage() {
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
+  const [lastReview, setLastReview] = useState<LastReviewFeedback | null>(
+    null,
+  );
+  const [session, setSession] = useState<StudySession | null>(null);
 
   const dueWords = useMemo(
     () => getDueWords(deck, studyProgress),
@@ -50,28 +100,58 @@ export function StudyPage() {
     () => getNewWords(deck, studyProgress),
     [deck, studyProgress],
   );
-  const queue = useMemo(
-    () => buildStudyQueue(appSettings.dailyNewLimit, dueWords, newWords),
-    [appSettings.dailyNewLimit, dueWords, newWords],
-  );
-  const dueWordIDs = useMemo(
-    () => new Set(dueWords.map((word) => word.id)),
-    [dueWords],
-  );
-  const newWordIDs = useMemo(
-    () => new Set(newWords.map((word) => word.id)),
-    [newWords],
-  );
+  useEffect(() => {
+    if (loading || deck.length === 0 || session) {
+      return;
+    }
 
+    const queue = buildStudyQueue(
+      appSettings.dailyNewLimit,
+      dueWords,
+      newWords,
+    );
+    setSession({
+      queue,
+      dueWordIDs: new Set(dueWords.map((word) => word.id)),
+      newWordIDs: new Set(newWords.map((word) => word.id)),
+      dueCount: dueWords.length,
+    });
+  }, [
+    appSettings.dailyNewLimit,
+    deck.length,
+    dueWords,
+    loading,
+    newWords,
+    session,
+  ]);
+
+  const queue = session?.queue ?? [];
   const current = queue[index];
   const completed = index >= queue.length && queue.length > 0;
+  const currentProgress = current
+    ? studyProgress[current.id] ?? {
+        status: "new" as const,
+        bucket: 0,
+        nextReviewAt: null,
+        lastReviewedAt: null,
+        reviewCount: 0,
+        correctCount: 0,
+        failCount: 0,
+        lastFailedAt: null,
+      }
+    : null;
 
   function handleReview(grade: ReviewGrade) {
     if (!current) {
       return;
     }
 
-    updateWordProgress(current.id, grade);
+    const nextProgress = updateWordProgress(current.id, grade);
+    setLastReview({
+      word: current.word,
+      grade,
+      progress: nextProgress,
+    });
     const nextCorrectCount =
       grade !== "again" ? correctCount + 1 : correctCount;
     if (grade !== "again") {
@@ -84,7 +164,9 @@ export function StudyPage() {
 
     if (nextIndex >= queue.length) {
       const reviewed = queue.length;
-      const newLearned = queue.filter((word) => newWordIDs.has(word.id)).length;
+      const newLearned = queue.filter((word) =>
+        session?.newWordIDs.has(word.id),
+      ).length;
       recordSession({
         kind: "study",
         total: reviewed,
@@ -107,11 +189,15 @@ export function StudyPage() {
     );
   }
 
+  if (!session) {
+    return <div className="p-6 text-slate-700">Preparing your study queue...</div>;
+  }
+
   return (
     <div className="space-y-6">
       <SectionHeader
         title="Study session"
-        detail={`${dueWords.length} due reviews, up to ${appSettings.dailyNewLimit} fresh words in this pass.`}
+        detail={`${session?.dueCount ?? dueWords.length} due reviews, up to ${appSettings.dailyNewLimit} fresh words in this pass.`}
       />
 
       {queue.length === 0 ? (
@@ -140,7 +226,7 @@ export function StudyPage() {
                 Card {index + 1} / {queue.length}
               </span>
               <span>
-                {current && dueWordIDs.has(current.id)
+                {current && session?.dueWordIDs.has(current.id)
                   ? "Due review"
                   : "New card"}
               </span>
@@ -152,11 +238,24 @@ export function StudyPage() {
               <h3 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">
                 {current?.word}
               </h3>
-              <div className="mt-10 rounded-[1.4rem] bg-white/10 p-5 text-sm leading-7 text-white/86">
-                {revealed
-                  ? current?.definition
-                  : "Reveal the definition when you are ready to judge recall quality."}
-              </div>
+              {revealed ? (
+                <div className="mt-10 space-y-4">
+                  <div className="rounded-[1.4rem] bg-white/10 p-5 text-sm leading-7 text-white/86">
+                    {current?.definition}
+                  </div>
+                  {current ? (
+                    <ExampleSentence
+                      sentence={current.exampleSentence}
+                      className="text-white/90"
+                    />
+                  ) : null}
+                </div>
+              ) : (
+                <div className="mt-10 rounded-[1.4rem] bg-white/10 p-5 text-sm leading-7 text-white/86">
+                  Reveal the definition when you are ready to judge recall
+                  quality.
+                </div>
+              )}
             </div>
 
             <div className="mt-5 flex flex-wrap gap-3">
@@ -180,9 +279,19 @@ export function StudyPage() {
                   key={button.grade}
                   type="button"
                   onClick={() => handleReview(button.grade)}
+                  aria-label={button.label}
                   className={`${button.className} rounded-2xl px-4 py-4 text-left text-sm font-semibold shadow-lg shadow-slate-900/5 transition hover:translate-y-[-1px]`}
                 >
-                  {button.label}
+                  <span className="block">{button.label}</span>
+                  <span className="mt-1 block text-xs font-medium opacity-80">
+                    {button.hint}
+                  </span>
+                  {currentProgress ? (
+                    <ReviewPreview
+                      currentProgress={currentProgress}
+                      grade={button.grade}
+                    />
+                  ) : null}
                 </button>
               ))}
             </div>
@@ -192,9 +301,44 @@ export function StudyPage() {
               expected success, and <strong>Easy</strong> when the card feels
               stable already.
             </div>
+            {lastReview ? <ReviewFeedback review={lastReview} /> : null}
           </div>
         </section>
       )}
     </div>
+  );
+}
+
+function ReviewFeedback({ review }: { review: LastReviewFeedback }) {
+  const stage = getMemoryStage(review.progress.bucket);
+
+  return (
+    <div className="mt-4 rounded-[1.5rem] border border-slate-200 bg-slate-50/90 p-4 text-sm text-slate-700">
+      <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
+        Last review
+      </p>
+      <p className="mt-2 leading-6">
+        <strong>{review.word}</strong> marked as{" "}
+        <strong>{review.grade}</strong> and moved to{" "}
+        <strong>{stage.label}</strong>.
+      </p>
+      <p className="mt-1 text-slate-500">Next rhythm: {stage.detail}.</p>
+    </div>
+  );
+}
+
+function ReviewPreview({
+  currentProgress,
+  grade,
+}: {
+  currentProgress: WordProgress;
+  grade: ReviewGrade;
+}) {
+  const nextStage = getMemoryStage(previewReview(currentProgress, grade).bucket);
+
+  return (
+    <span className="mt-3 block border-t border-current/20 pt-3 text-xs font-medium opacity-85">
+      {nextStage.label}: {nextStage.detail}
+    </span>
   );
 }

@@ -2,6 +2,15 @@ import type { ReviewGrade, ReviewStatus, Word, WordProgress } from "../types";
 
 const intervals = [0, 1, 3, 7, 14, 30];
 
+const memoryStages = [
+  { label: "Fresh", detail: "review again today" },
+  { label: "Warming up", detail: "review in 1 day" },
+  { label: "Learning", detail: "review in 3 days" },
+  { label: "Settling", detail: "review in 7 days" },
+  { label: "Stable", detail: "review in 14 days" },
+  { label: "Long-term", detail: "review in 30 days" },
+] as const;
+
 export function getDefaultProgress(): WordProgress {
   return {
     status: "new",
@@ -116,4 +125,15 @@ export function getMistakeWords(
         : 0;
       return rightTime - leftTime;
     });
+}
+
+export function getMemoryStage(bucket: number) {
+  return memoryStages[Math.max(0, Math.min(memoryStages.length - 1, bucket))];
+}
+
+export function previewReview(
+  existing: WordProgress,
+  grade: ReviewGrade,
+): WordProgress {
+  return applyReview(existing, grade, new Date(0));
 }

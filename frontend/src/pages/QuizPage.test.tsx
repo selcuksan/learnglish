@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { QuizPage } from "./QuizPage";
-import type { AppSettings, ReviewGrade, Word } from "../types";
+import type { AppSettings, ReviewGrade, Word, WordProgress } from "../types";
 
 const mockUseWords = vi.fn();
 
@@ -28,30 +28,35 @@ const deck: Word[] = [
     word: "abuse",
     definition: "to treat someone cruelly",
     slug: "abuse",
+    exampleSentence: "Some people abuse power when nobody stops them.",
   },
   {
     id: 3,
     word: "activity",
     definition: "an action or task",
     slug: "activity",
+    exampleSentence: "Reading together is a calm evening activity.",
   },
   {
     id: 4,
     word: "accident",
     definition: "a sudden unplanned event",
     slug: "accident",
+    exampleSentence: "The glass broke by accident during cleanup.",
   },
   {
     id: 5,
     word: "benefit",
     definition: "an advantage or helpful effect",
     slug: "benefit",
+    exampleSentence: "Daily practice has the benefit of steady progress.",
   },
   {
     id: 1,
     word: "habit",
     definition: "the usual way of behaving",
     slug: "habit",
+    exampleSentence: "Checking your notes every night can become a habit.",
   },
 ];
 
@@ -62,6 +67,20 @@ function createSettings(overrides: Partial<AppSettings> = {}): AppSettings {
     dailyNewGoal: 8,
     quizSize: 2,
     quizMode: "definition-to-word",
+    ...overrides,
+  };
+}
+
+function createProgress(overrides: Partial<WordProgress> = {}): WordProgress {
+  return {
+    status: "learning",
+    bucket: 0,
+    nextReviewAt: "2026-05-14T10:00:00.000Z",
+    lastReviewedAt: "2026-05-14T09:00:00.000Z",
+    reviewCount: 1,
+    correctCount: 0,
+    failCount: 1,
+    lastFailedAt: "2026-05-14T09:00:00.000Z",
     ...overrides,
   };
 }
@@ -101,6 +120,26 @@ describe("QuizPage", () => {
     expect(screen.getByText("Question 2 / 2")).toBeInTheDocument();
     expect(screen.getByText("Score 1")).toBeInTheDocument();
     expect(recordSession).not.toHaveBeenCalled();
+  });
+
+  it("starts with due review words before untouched words", () => {
+    mockUseWords.mockReturnValue({
+      deck,
+      loading: false,
+      error: null,
+      studyProgress: {
+        2: createProgress(),
+      },
+      appSettings: createSettings({ quizSize: 2 }),
+      updateWordProgress: vi.fn(),
+      updateSettings: vi.fn(),
+      recordSession: vi.fn(),
+    });
+
+    render(<QuizPage />);
+
+    expect(screen.getByText("to treat someone cruelly")).toBeInTheDocument();
+    expect(screen.queryByText("the usual way of behaving")).not.toBeInTheDocument();
   });
 
   it("keeps advancing after a wrong answer without increasing score", async () => {
@@ -171,30 +210,35 @@ describe("QuizPage", () => {
         word: "abuse",
         definition: "to treat someone cruelly",
         slug: "abuse",
+        exampleSentence: "Some people abuse power when nobody stops them.",
       },
       {
         id: 2,
         word: "accident",
         definition: "a sudden unplanned event",
         slug: "accident",
+        exampleSentence: "The glass broke by accident during cleanup.",
       },
       {
         id: 3,
         word: "activity",
         definition: "an action or task",
         slug: "activity",
+        exampleSentence: "Reading together is a calm evening activity.",
       },
       {
         id: 4,
         word: "benefit",
         definition: "an advantage or helpful effect",
         slug: "benefit",
+        exampleSentence: "Daily practice has the benefit of steady progress.",
       },
       {
         id: 5,
         word: "culture",
         definition: "the ideas and customs of a society",
         slug: "culture",
+        exampleSentence: "Music is a visible part of local culture.",
       },
     ];
 

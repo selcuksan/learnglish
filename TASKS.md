@@ -10,7 +10,7 @@
 - `[x]` Go-side repository/API tests
 - `[x]` Frontend build verification
 - `[x]` Quiz interaction tests for score and question progression
-- `[-]` Next implementation focus: export/import and semantic layer
+- `[-]` Next implementation focus: example sentence quality, then semantic layer continuation
 
 ## Phase 1 — Foundation
 - `[x]` Root klasör düzenini kur: `backend`, `frontend`, `tools`, `data`, `docs`
@@ -71,8 +71,9 @@
 - `[x]` Repository ve API için Go testleri ekle
 - `[x]` Frontend production build'ini CI benzeri doğrulama olarak kullan
 - `[x]` Quiz UI davranışı için frontend etkileşim testleri ekle
-- `[ ]` Study akışı için frontend etkileşim testleri ekle
-- `[ ]` localStorage migration ve reset davranışı için test ekle
+- `[x]` Study akışı için frontend etkileşim testleri ekle
+- `[x]` localStorage import/export sanitize davranışı için test ekle
+- `[ ]` localStorage migration ve reset davranışı için ek test ekle
 
 ## Phase 11 — High-Return Features
 - `[ ]` Yazmalı quiz
@@ -82,13 +83,13 @@
 - `[x]` Hata defteri
   - Yanlış cevaplanan kelimeler için ayrı çalışma görünümü
   - Quiz ve study hataları ortak havuza yazılır
-- `[ ]` Örnek cümle desteği
+- `[-]` Örnek cümle desteği
   - Her kelime için en az bir kullanım örneği gösterilir
-  - Kaynak build-time enrichment ile üretilir ya da elle eklenir
+  - Mevcut build-time placeholder enrichment doğal cümle kalitesine ulaşmadığı için kaynak seçimi bekliyor
 - `[x]` Günlük hedefler
   - Günlük `review` ve `new words` hedefleri tanımlanır
   - Dashboard hedef ilerlemesini gösterir
-- `[ ]` Progress export/import
+- `[x]` Progress export/import
   - `localStorage` state JSON olarak dışarı alınır
   - Aynı sözleşme ile geri yüklenir
 
@@ -105,9 +106,9 @@
   - Kelimeler tema bazlı çalışma kümelerine ayrılır
 
 ## Suggested Build Order From Here
-- `1.` Yazmalı quiz
-- `2.` Hata defteri
-- `3.` Örnek cümle desteği
-- `4.` Günlük hedefler
-- `5.` Progress export/import
-- `6.` Semantic layer devamı: related words + semantic search
+- `1.` Örnek cümle kaynağını sağlamlaştır
+- `2.` Related words
+- `3.` Semantic search
+- `4.` Confused words
+- `5.` Progress export/import sonrası optional polish: keyboard shortcuts
+- `6.` Typed quiz only if recall depth becomes the next priority

@@ -3,6 +3,7 @@ export type Word = {
   word: string;
   definition: string;
   slug: string;
+  exampleSentence: string;
 };
 
 export type Meta = {

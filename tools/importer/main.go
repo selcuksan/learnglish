@@ -19,10 +19,11 @@ const (
 )
 
 type wordRecord struct {
-	ID         int    `json:"id"`
-	Word       string `json:"word"`
-	Definition string `json:"definition"`
-	Slug       string `json:"slug"`
+	ID              int    `json:"id"`
+	Word            string `json:"word"`
+	Definition      string `json:"definition"`
+	Slug            string `json:"slug"`
+	ExampleSentence string `json:"exampleSentence"`
 }
 
 type metaRecord struct {
@@ -78,8 +79,9 @@ func main() {
 		seen[key] = struct{}{}
 
 		list = append(list, wordRecord{
-			Word:       word,
-			Definition: definition,
+			Word:            word,
+			Definition:      definition,
+			ExampleSentence: buildExampleSentence(word, definition),
 		})
 	}
 
@@ -142,6 +144,115 @@ func slugify(value string) string {
 		return "word"
 	}
 	return slug
+}
+
+var exampleOverrides = map[string]string{
+	"a":       "I saw a bird near the window this morning.",
+	"about":   "We talked about the next lesson after dinner.",
+	"above":   "The picture hangs above the sofa in the living room.",
+	"abroad":  "She studied abroad for a year before starting work.",
+	"after":   "We met after class to review the notes.",
+	"against": "The ladder rested against the wall all afternoon.",
+	"along":   "We walked along the river before sunset.",
+	"around":  "They sat around the table and shared ideas.",
+	"at":      "I will meet you at the station at noon.",
+	"because": "We stayed inside because it was raining heavily.",
+	"before":  "Finish the task before lunch if you can.",
+	"between": "The cafe is between the bank and the post office.",
+	"by":      "She sat by the window and started reading.",
+	"down":    "The ball rolled down the hill after the kick.",
+	"for":     "This shelf is for books, not for boxes.",
+	"from":    "I got a message from my friend last night.",
+	"in":      "The keys are in my bag next to the notebook.",
+	"into":    "She walked into the room without making a sound.",
+	"of":      "The cover of the book was bright red.",
+	"on":      "The notebook is on the desk near the lamp.",
+	"out":     "He went out for some fresh air after work.",
+	"over":    "A narrow bridge runs over the river here.",
+	"through": "Sunlight came through the window in long stripes.",
+	"to":      "We went to the library after school.",
+	"under":   "The cat slept under the chair all evening.",
+	"with":    "She came with her brother to the meeting.",
+	"without": "He left without his umbrella and got soaked.",
+}
+
+func buildExampleSentence(word, definition string) string {
+	lowerWord := strings.ToLower(strings.TrimSpace(word))
+	if sentence, ok := exampleOverrides[lowerWord]; ok {
+		return sentence
+	}
+
+	lowerDefinition := strings.ToLower(strings.TrimSpace(definition))
+
+	switch {
+	case strings.HasPrefix(lowerDefinition, "to "):
+		return fmt.Sprintf("They %s the plan when the situation changes.", word)
+	case strings.HasSuffix(lowerWord, "ly"):
+		return fmt.Sprintf("She spoke %s so everyone could follow her clearly.", word)
+	case looksLikeAdjective(lowerWord, lowerDefinition):
+		return fmt.Sprintf("It was %s %s decision in a difficult moment.", articleFor(word), word)
+	case looksLikePlaceWord(lowerDefinition):
+		return fmt.Sprintf("The sign stayed %s the main entrance all day.", word)
+	default:
+		return fmt.Sprintf("The %s was important in that situation.", word)
+	}
+}
+
+func looksLikeAdjective(word, definition string) bool {
+	if strings.HasPrefix(definition, "having ") ||
+		strings.HasPrefix(definition, "being ") ||
+		strings.HasPrefix(definition, "full of ") ||
+		strings.HasPrefix(definition, "complete ") ||
+		strings.HasPrefix(definition, "concerning ") ||
+		strings.HasPrefix(definition, "not ") ||
+		strings.HasPrefix(definition, "used ") {
+		return true
+	}
+
+	for _, suffix := range []string{"able", "ible", "al", "ful", "ic", "ive", "less", "ous", "ish"} {
+		if strings.HasSuffix(word, suffix) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func looksLikePlaceWord(definition string) bool {
+	for _, prefix := range []string{
+		"in or to ",
+		"in a ",
+		"in the ",
+		"into ",
+		"on ",
+		"over ",
+		"under ",
+		"between ",
+		"through ",
+		"across ",
+		"behind ",
+		"near ",
+	} {
+		if strings.HasPrefix(definition, prefix) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func articleFor(value string) string {
+	trimmed := strings.TrimSpace(strings.ToLower(value))
+	if trimmed == "" {
+		return "a"
+	}
+
+	switch trimmed[0] {
+	case 'a', 'e', 'i', 'o', 'u':
+		return "an"
+	default:
+		return "a"
+	}
 }
 
 func writeJSON(path string, payload any) error {

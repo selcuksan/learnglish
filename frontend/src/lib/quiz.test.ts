@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { buildQuizSource, chooseDistractors, createQuiz } from "./quiz";
-import type { Word } from "../types";
+import { getDefaultProgress } from "./spacedRepetition";
+import type { StudyProgress, Word } from "../types";
 
 vi.mock("./utils", async () => {
   const actual = await vi.importActual<typeof import("./utils")>("./utils");
@@ -18,36 +19,42 @@ const deck: Word[] = [
     word: "habit",
     definition: "the usual way of behaving and a repeated custom",
     slug: "habit",
+    exampleSentence: "Checking your notes every night can become a habit.",
   },
   {
     id: 2,
     word: "routine",
     definition: "a usual repeated way of acting or behaving",
     slug: "routine",
+    exampleSentence: "Morning exercise is part of her routine.",
   },
   {
     id: 3,
     word: "custom",
     definition: "a traditional way of behaving or doing something",
     slug: "custom",
+    exampleSentence: "Removing shoes indoors is a custom in some homes.",
   },
   {
     id: 4,
     word: "accident",
     definition: "a sudden unplanned event",
     slug: "accident",
+    exampleSentence: "The glass broke by accident during cleanup.",
   },
   {
     id: 5,
     word: "benefit",
     definition: "an advantage or helpful effect",
     slug: "benefit",
+    exampleSentence: "Daily practice has the benefit of steady progress.",
   },
   {
     id: 6,
     word: "culture",
     definition: "the beliefs and customs of a group",
     slug: "culture",
+    exampleSentence: "Music is a visible part of local culture.",
   },
 ];
 
@@ -62,6 +69,22 @@ describe("quiz helpers", () => {
   it("builds a shuffled quiz source instead of taking the first alphabetical block", () => {
     const source = buildQuizSource(deck, {});
     expect(source[0].word).toBe("culture");
+  });
+
+  it("prioritizes due words before untouched new words", () => {
+    const progress: StudyProgress = {
+      1: {
+        ...getDefaultProgress(),
+        status: "learning",
+        bucket: 0,
+        nextReviewAt: "2026-05-14T10:00:00.000Z",
+      },
+    };
+
+    const source = buildQuizSource(deck, progress);
+
+    expect(source[0].word).toBe("habit");
+    expect(source.slice(1).map((word) => word.word)).toContain("culture");
   });
 
   it("creates quiz cards that keep the correct answer and three distractors", () => {

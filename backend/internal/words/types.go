@@ -3,10 +3,11 @@ package words
 import "time"
 
 type Word struct {
-	ID         int    `json:"id"`
-	Word       string `json:"word"`
-	Definition string `json:"definition"`
-	Slug       string `json:"slug"`
+	ID              int    `json:"id"`
+	Word            string `json:"word"`
+	Definition      string `json:"definition"`
+	Slug            string `json:"slug"`
+	ExampleSentence string `json:"exampleSentence"`
 }
 
 type Meta struct {

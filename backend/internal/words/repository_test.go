@@ -20,4 +20,8 @@ func TestRepositoryLoadsEmbeddedDataset(t *testing.T) {
 	if results[0].Word == "" || results[0].Definition == "" {
 		t.Fatal("expected populated word record")
 	}
+
+	if results[0].ExampleSentence == "" {
+		t.Fatal("expected example sentence enrichment on word record")
+	}
 }

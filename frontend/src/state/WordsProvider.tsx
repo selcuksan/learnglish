@@ -9,7 +9,12 @@ import {
 } from "react";
 
 import { fetchDeck, fetchMeta } from "../lib/api";
-import { loadState, resetState, saveState } from "../lib/storage";
+import {
+  loadState,
+  resetState,
+  sanitizePersistedState,
+  saveState,
+} from "../lib/storage";
 import { applyReview, getDefaultProgress } from "../lib/spacedRepetition";
 import type {
   AppSettings,
@@ -30,11 +35,13 @@ type WordsContextValue = {
   studyProgress: StudyProgress;
   appSettings: AppSettings;
   sessionHistory: SessionHistoryItem[];
+  stateSnapshot: PersistedState;
   updateWordProgress: (wordId: number, grade: ReviewGrade) => WordProgress;
   updateSettings: (next: Partial<AppSettings>) => void;
   recordSession: (
     session: Omit<SessionHistoryItem, "id" | "completedAt">,
   ) => void;
+  importProgress: (value: unknown) => void;
   resetProgress: () => void;
 };
 
@@ -98,6 +105,7 @@ export function WordsProvider({ children }: PropsWithChildren) {
       studyProgress: state.studyProgress,
       appSettings: state.appSettings,
       sessionHistory: state.sessionHistory,
+      stateSnapshot: state,
       updateWordProgress(wordId, grade) {
         const nextProgress = applyReview(
           state.studyProgress[wordId] ?? getDefaultProgress(),
@@ -133,6 +141,9 @@ export function WordsProvider({ children }: PropsWithChildren) {
             ...current.sessionHistory,
           ].slice(0, 30),
         }));
+      },
+      importProgress(value) {
+        setState(sanitizePersistedState(value));
       },
       resetProgress() {
         setState(resetState());

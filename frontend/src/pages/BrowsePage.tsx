@@ -1,5 +1,6 @@
 import { useDeferredValue, useEffect, useState } from "react";
 
+import { ExampleSentence } from "../components/ExampleSentence";
 import { SectionHeader } from "../components/SectionHeader";
 import { fetchWords } from "../lib/api";
 import { formatDate } from "../lib/utils";
@@ -125,7 +126,13 @@ function BrowseRow({
         <p className="font-semibold text-slate-950">{word.word}</p>
         <p className="mt-1 text-xs text-slate-500">{word.slug}</p>
       </div>
-      <p className="leading-6 text-slate-700">{word.definition}</p>
+      <div>
+        <p className="leading-6 text-slate-700">{word.definition}</p>
+        <ExampleSentence
+          sentence={word.exampleSentence}
+          className="mt-3 border-slate-200/70 bg-slate-50/80 text-slate-700"
+        />
+      </div>
       <div className="text-slate-600">
         <p className="font-medium capitalize text-slate-900">
           {progress?.status ?? "new"}

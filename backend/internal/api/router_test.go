@@ -66,4 +66,8 @@ func TestWordsEndpointSupportsSearch(t *testing.T) {
 	if response.Total == 0 || len(response.Items) == 0 {
 		t.Fatal("expected search results")
 	}
+
+	if response.Items[0].ExampleSentence == "" {
+		t.Fatal("expected example sentence in API response")
+	}
 }

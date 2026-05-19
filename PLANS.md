@@ -39,15 +39,17 @@
 - Hata defteri eklendi ve yanlış cevap havuzu ayrı bir review akışına bağlandı
 - Günlük hedefler eklendi; session history üzerinden günlük review/new progress hesaplanıyor
 - Better distractors eklendi; quiz yanlış şıkları artık definition similarity ağırlıklı seçiliyor
+- Progress export/import eklendi; tarayıcı state'i JSON backup olarak dışa alınıp geri yüklenebiliyor
+- Example sentence yüzeyi eklendi; mevcut build-time placeholder cümleler doğal kullanım kalitesine ulaşmadığı için kaynak seçimi açık kaldı
 - Sonraki geliştirme dalgası öğrenme kalitesini yükseltecek özelliklere ayrıldı
 
 ## Next Feature Wave
-- Örnek cümle desteği
-- Progress export/import
-- Yazmalı quiz
-- Semantic layer başlangıcı:
+- Örnek cümle kaynağını sağlamlaştır
+- Semantic layer devamı:
   - related words
   - semantic search
+  - confused words
+- Typed quiz yalnızca daha derin recall ihtiyacı öncelik kazanırsa
 
 ## Defaults and Assumptions
 - Hedef kullanım kişisel ve lokaldir

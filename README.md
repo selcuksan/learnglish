@@ -10,6 +10,8 @@ Learnglish, NGSL tabanlı İngilizce kelime çiftlerini kullanarak düzenli tekr
 - Quiz içinde `definition -> word` ve `word -> definition` modları ayrı ayrı sunuluyor
 - Yanlış cevaplanan kelimeler için ayrı `Mistakes` çalışma yüzeyi var
 - Günlük review ve new word hedefleri dashboard ile settings arasında bağlı çalışıyor
+- Progress artık `Settings` üzerinden JSON olarak export/import edilebiliyor
+- Kelime kartları ve browse görünümü örnek cümle yüzeyini taşıyor; cümle kaynağı henüz kalite yükseltme aşamasında
 - Quiz distractor seçenekleri artık definition benzerliğine göre daha yakın adaylardan seçiliyor
 - Uygulama tek Go server üzerinden servis edilebiliyor
 
@@ -69,9 +71,19 @@ Bu modda `Vite`, `/api` isteklerini `localhost:8080` adresine proxy eder.
 
 ## Sonraki Yüksek Getirili Özellikler
 - Örnek cümle desteği
-- Progress export/import
+- Related words
+- Semantic search
+- Confused words
 - Yazmalı quiz
-- Daha sonra: related words, semantic search
+
+## Son Chat Sonunda Nerede Kaldık
+- `Progress export/import` tamamlandı
+- `Better distractors` tamamlandı
+- Sıradaki en mantıklı feature wave:
+  - doğal örnek cümle kaynağını sağlamlaştır
+  - sonra `related words`
+  - sonra `semantic search`
+  - sonra `confused words`
 
 ## Kapsam Dışı
 - Auth

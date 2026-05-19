@@ -51,15 +51,17 @@ make test
 - Mistake notebook flow is implemented and backed by local progress fields.
 - Daily goals are implemented using enriched `sessionHistory` records.
 - Quiz distractors now use semantic similarity scoring instead of pure random picks.
+- Local progress can be exported/imported as sanitized JSON backups from Settings.
+- Example sentence surfaces exist, but the current build-time placeholders are not yet a production-quality source.
 - `TASKS.md` is the source of truth for implementation order and progress tracking.
 
 ## Next Priority Features
-- Example sentence support
-- Progress export/import
-- Typed quiz
-- Early semantic layer:
+- Example sentence source quality
+- Semantic layer continuation:
   - related words
   - semantic search
+  - confused words
+- Typed quiz is intentionally deferred for now.
 
 ## Agent Constraints
 - Preserve the local-first product shape unless the user asks to change it.
@@ -68,3 +70,4 @@ make test
 - When verifying backend code, prefer `go test ./backend/... ./tools/...`.
 - When verifying frontend code, prefer `cd frontend && npm run build` and `cd frontend && npm run test`.
 - When starting a new feature, update `TASKS.md` status markers in the same change set if the implementation meaningfully changes roadmap progress.
+- If you touch persistence, preserve backward compatibility with older `localStorage` snapshots where feasible.

@@ -16,7 +16,7 @@ const defaultSettings: AppSettings = {
   quizMode: "definition-to-word",
 };
 
-function baseState(): PersistedState {
+export function createBaseState(): PersistedState {
   return {
     version: STATE_VERSION,
     studyProgress: {},
@@ -29,18 +29,12 @@ export function loadState(): PersistedState {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) {
-      return baseState();
+      return createBaseState();
     }
 
-    const parsed = JSON.parse(raw) as Partial<PersistedState>;
-    return {
-      version: STATE_VERSION,
-      studyProgress: sanitizeProgress(parsed.studyProgress),
-      appSettings: sanitizeSettings(parsed.appSettings),
-      sessionHistory: sanitizeHistory(parsed.sessionHistory),
-    };
+    return sanitizePersistedState(JSON.parse(raw));
   } catch {
-    return baseState();
+    return createBaseState();
   }
 }
 
@@ -49,9 +43,23 @@ export function saveState(state: PersistedState) {
 }
 
 export function resetState() {
-  const next = baseState();
+  const next = createBaseState();
   saveState(next);
   return next;
+}
+
+export function sanitizePersistedState(value: unknown): PersistedState {
+  const parsed = value as Partial<PersistedState> | null | undefined;
+  return {
+    version: STATE_VERSION,
+    studyProgress: sanitizeProgress(parsed?.studyProgress),
+    appSettings: sanitizeSettings(parsed?.appSettings),
+    sessionHistory: sanitizeHistory(parsed?.sessionHistory),
+  };
+}
+
+export function serializeState(state: PersistedState) {
+  return JSON.stringify(state, null, 2);
 }
 
 function sanitizeSettings(value: unknown): AppSettings {

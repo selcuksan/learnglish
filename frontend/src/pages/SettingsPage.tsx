@@ -1,11 +1,53 @@
-import { useState } from "react";
+import { useRef, useState, type ChangeEvent } from "react";
 
 import { SectionHeader } from "../components/SectionHeader";
+import { serializeState } from "../lib/storage";
 import { useWords } from "../state/WordsProvider";
 
 export function SettingsPage() {
-  const { appSettings, resetProgress, updateSettings, meta } = useWords();
+  const {
+    appSettings,
+    resetProgress,
+    updateSettings,
+    meta,
+    stateSnapshot,
+    importProgress,
+  } = useWords();
   const [confirmReset, setConfirmReset] = useState(false);
+  const [importMessage, setImportMessage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  function handleExport() {
+    const blob = new Blob([serializeState(stateSnapshot)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `learnglish-progress-${new Date().toISOString().slice(0, 10)}.json`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function handleImport(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    try {
+      const raw = await file.text();
+      importProgress(JSON.parse(raw));
+      setImportMessage("Progress imported successfully.");
+      setConfirmReset(false);
+    } catch {
+      setImportMessage(
+        "Import failed. Please choose a valid Learnglish JSON backup.",
+      );
+    } finally {
+      event.target.value = "";
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -88,22 +130,53 @@ export function SettingsPage() {
             Progress is stored only in your browser. Dataset version:{" "}
             {meta?.version ?? "unknown"}.
           </p>
-          <button
-            type="button"
-            onClick={() => {
-              if (confirmReset) {
-                resetProgress();
-                setConfirmReset(false);
-                return;
-              }
-              setConfirmReset(true);
-            }}
-            className="mt-5 rounded-full bg-rose-500 px-5 py-3 text-sm font-semibold text-white"
-          >
-            {confirmReset
-              ? "Click again to reset all progress"
-              : "Reset local progress"}
-          </button>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={handleExport}
+              className="rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white"
+            >
+              Export progress
+            </button>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-800"
+            >
+              Import progress
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (confirmReset) {
+                  resetProgress();
+                  setConfirmReset(false);
+                  setImportMessage(null);
+                  return;
+                }
+                setConfirmReset(true);
+              }}
+              className="rounded-full bg-rose-500 px-5 py-3 text-sm font-semibold text-white"
+            >
+              {confirmReset
+                ? "Click again to reset all progress"
+                : "Reset local progress"}
+            </button>
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/json"
+            onChange={handleImport}
+            className="hidden"
+          />
+          <div className="mt-5 rounded-[1.5rem] bg-white/70 p-4 text-sm leading-6 text-slate-600">
+            Export saves your current study state as a JSON backup. Import
+            replaces the current local state with the selected backup file.
+          </div>
+          {importMessage ? (
+            <p className="mt-3 text-sm text-slate-700">{importMessage}</p>
+          ) : null}
         </div>
       </section>
     </div>
