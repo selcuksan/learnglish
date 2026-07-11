@@ -1,6 +1,8 @@
 import { useDeferredValue, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { ExampleSentence } from "../components/ExampleSentence";
+import { PronounceButton } from "../components/PronounceButton";
 import { SectionHeader } from "../components/SectionHeader";
 import { fetchWords } from "../lib/api";
 import { formatDate } from "../lib/utils";
@@ -123,7 +125,16 @@ function BrowseRow({
   return (
     <div className="grid grid-cols-[1.1fr_2fr_0.9fr] gap-4 px-4 py-4 text-sm">
       <div>
-        <p className="font-semibold text-slate-950">{word.word}</p>
+        <div className="flex items-center gap-1">
+          <Link to={`/words/${word.id}`} className="font-semibold text-slate-950 hover:text-cyan-700 transition">
+            {word.word}
+          </Link>
+          <PronounceButton
+            word={word.word}
+            className="text-slate-400 hover:text-slate-700"
+            size={14}
+          />
+        </div>
         <p className="mt-1 text-xs text-slate-500">{word.slug}</p>
       </div>
       <div>

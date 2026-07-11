@@ -4,6 +4,7 @@ PORT ?= 8080
 .PHONY: import frontend-build frontend-build-static build run stop test
 
 import:
+	./tools/fetch-tatoeba.sh
 	go run ./tools/importer
 
 frontend-build:

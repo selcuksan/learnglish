@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { ExampleSentence } from "../components/ExampleSentence";
+import { PronounceButton } from "../components/PronounceButton";
 import { SectionHeader } from "../components/SectionHeader";
+import { SessionProgressBar } from "../components/SessionProgressBar";
 import {
   getDueWords,
   getMemoryStage,
@@ -9,6 +11,7 @@ import {
   previewReview,
 } from "../lib/spacedRepetition";
 import { randomItems } from "../lib/utils";
+import { useKeyboardShortcuts } from "../lib/useKeyboardShortcuts";
 import { useWords } from "../state/WordsProvider";
 import type { ReviewGrade, Word, WordProgress } from "../types";
 
@@ -177,6 +180,24 @@ export function StudyPage() {
     }
   }
 
+  const gradeKeys: ReviewGrade[] = ["again", "hard", "good", "easy"];
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useKeyboardShortcuts(
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    useMemo(
+      () => ({
+        " ": () => setRevealed((v) => !v),
+        "1": () => { if (current && !completed) handleReview(gradeKeys[0]); },
+        "2": () => { if (current && !completed) handleReview(gradeKeys[1]); },
+        "3": () => { if (current && !completed) handleReview(gradeKeys[2]); },
+        "4": () => { if (current && !completed) handleReview(gradeKeys[3]); },
+      }),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [current, completed, index, correctCount, session],
+    ),
+  );
+
   if (loading) {
     return (
       <div className="p-6 text-slate-700">Preparing your study queue...</div>
@@ -199,6 +220,7 @@ export function StudyPage() {
         title="Study session"
         detail={`${session?.dueCount ?? dueWords.length} due reviews, up to ${appSettings.dailyNewLimit} fresh words in this pass.`}
       />
+      <SessionProgressBar current={index} total={queue.length} />
 
       {queue.length === 0 ? (
         <div className="glass-panel rounded-[2rem] border border-white/70 p-8 text-sm text-slate-700">
@@ -238,6 +260,12 @@ export function StudyPage() {
               <h3 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">
                 {current?.word}
               </h3>
+              {current ? (
+                <PronounceButton
+                  word={current.word}
+                  className="mt-3 text-cyan-200 hover:text-white"
+                />
+              ) : null}
               {revealed ? (
                 <div className="mt-10 space-y-4">
                   <div className="rounded-[1.4rem] bg-white/10 p-5 text-sm leading-7 text-white/86">

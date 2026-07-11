@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { SectionHeader } from "../components/SectionHeader";
+import { SessionProgressBar } from "../components/SessionProgressBar";
 import { buildQuizSource, createQuiz, type QuizCard } from "../lib/quiz";
+import { useKeyboardShortcuts } from "../lib/useKeyboardShortcuts";
 import { useWords } from "../state/WordsProvider";
 import type { QuizMode } from "../types";
 
@@ -42,6 +44,7 @@ export function QuizPage() {
   const [score, setScore] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [sessionSeed, setSessionSeed] = useState(0);
+  const [wrongAnswers, setWrongAnswers] = useState<Array<{ word: string; definition: string }>>([]); 
 
   useEffect(() => {
     if (deck.length === 0) {
@@ -55,6 +58,7 @@ export function QuizPage() {
     setIndex(0);
     setScore(0);
     setSelected(null);
+    setWrongAnswers([]);
   }, [appSettings.quizMode, appSettings.quizSize, deck, sessionSeed]);
 
   const current = quiz[index];
@@ -72,6 +76,10 @@ export function QuizPage() {
       updateWordProgress(current.prompt.id, "good");
     } else {
       updateWordProgress(current.prompt.id, "again");
+      setWrongAnswers((prev) => [
+        ...prev,
+        { word: current.prompt.word, definition: current.prompt.definition },
+      ]);
     }
   }
 
@@ -94,6 +102,21 @@ export function QuizPage() {
     }
   }
 
+  useKeyboardShortcuts(
+    useMemo(
+      () => ({
+        "1": () => { if (current && selected === null) handlePick(current.options[0]?.id); },
+        "2": () => { if (current && selected === null) handlePick(current.options[1]?.id); },
+        "3": () => { if (current && selected === null) handlePick(current.options[2]?.id); },
+        "4": () => { if (current && selected === null && current.options[3]) handlePick(current.options[3].id); },
+        " ": () => handleNext(),
+        "Enter": () => handleNext(),
+      }),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [current, selected, index, score, quiz],
+    ),
+  );
+
   if (loading) {
     return <div className="p-6 text-slate-700">Generating your quiz...</div>;
   }
@@ -109,6 +132,7 @@ export function QuizPage() {
   return (
     <div className="space-y-6">
       <SectionHeader title="Quiz mode" detail={copy.detail} />
+      <SessionProgressBar current={index} total={quiz.length} />
       <section className="glass-panel rounded-[1.75rem] border border-white/70 p-4">
         <div className="flex flex-wrap gap-3">
           <button
@@ -150,6 +174,28 @@ export function QuizPage() {
           <p className="mt-3 text-sm text-slate-600">
             Quiz answers also feed your spaced repetition progress.
           </p>
+          {wrongAnswers.length > 0 ? (
+            <div className="mt-5 space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-rose-600">
+                Missed words
+              </p>
+              {wrongAnswers.map((item, i) => (
+                <div
+                  key={i}
+                  className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3"
+                >
+                  <p className="font-semibold text-slate-950">{item.word}</p>
+                  <p className="mt-1 text-sm text-slate-600">
+                    {item.definition}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-4 text-sm font-medium text-emerald-700">
+              Perfect score — no mistakes this round!
+            </p>
+          )}
           <button
             type="button"
             onClick={() => setSessionSeed((value) => value + 1)}

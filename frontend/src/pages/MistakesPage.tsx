@@ -1,8 +1,11 @@
 import { useMemo, useState } from "react";
 
 import { ExampleSentence } from "../components/ExampleSentence";
+import { PronounceButton } from "../components/PronounceButton";
 import { SectionHeader } from "../components/SectionHeader";
+import { SessionProgressBar } from "../components/SessionProgressBar";
 import { getMemoryStage, getMistakeWords } from "../lib/spacedRepetition";
+import { useKeyboardShortcuts } from "../lib/useKeyboardShortcuts";
 import { formatDate } from "../lib/utils";
 import { useWords } from "../state/WordsProvider";
 import type { ReviewGrade, Word } from "../types";
@@ -70,6 +73,22 @@ export function MistakesPage() {
     }
   }
 
+  const gradeKeys: ReviewGrade[] = ["again", "hard", "good", "easy"];
+
+  useKeyboardShortcuts(
+    useMemo(
+      () => ({
+        " ": () => setRevealed((v) => !v),
+        "1": () => { if (current && !completed) handleReview(gradeKeys[0]); },
+        "2": () => { if (current && !completed) handleReview(gradeKeys[1]); },
+        "3": () => { if (current && !completed) handleReview(gradeKeys[2]); },
+        "4": () => { if (current && !completed) handleReview(gradeKeys[3]); },
+      }),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [current, completed, index, correctCount, queue],
+    ),
+  );
+
   if (loading) {
     return (
       <div className="p-6 text-slate-700">Loading your mistake notebook...</div>
@@ -90,6 +109,7 @@ export function MistakesPage() {
         title="Mistake notebook"
         detail="Target the words that have already caused friction in study or quiz mode."
       />
+      <SessionProgressBar current={index} total={queue.length} />
 
       <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
         <div className="glass-panel rounded-[1.75rem] border border-white/70 p-5">
@@ -180,6 +200,10 @@ export function MistakesPage() {
                 <h3 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">
                   {current.word}
                 </h3>
+                <PronounceButton
+                  word={current.word}
+                  className="mt-3 text-rose-200 hover:text-white"
+                />
                 {revealed ? (
                   <div className="mt-10 space-y-4">
                     <div className="rounded-[1.4rem] bg-white/10 p-5 text-sm leading-7 text-white/86">

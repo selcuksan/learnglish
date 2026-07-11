@@ -7,6 +7,7 @@ import { MistakesPage } from "./pages/MistakesPage";
 import { QuizPage } from "./pages/QuizPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { StudyPage } from "./pages/StudyPage";
+import { WordDetailPage } from "./pages/WordDetailPage";
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
         <Route path="/quiz" element={<QuizPage />} />
         <Route path="/mistakes" element={<MistakesPage />} />
         <Route path="/browse" element={<BrowsePage />} />
+        <Route path="/words/:id" element={<WordDetailPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

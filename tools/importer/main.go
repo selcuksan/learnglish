@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -9,6 +10,7 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/xuri/excelize/v2"
 )
@@ -63,6 +65,18 @@ func main() {
 	}
 
 	seen := make(map[string]struct{})
+	targetWords := make(map[string]struct{})
+	
+	// First pass: collect target words
+	for _, row := range rows[1:] {
+		word := strings.TrimSpace(cell(row, wordIndex))
+		if word != "" {
+			targetWords[strings.ToLower(word)] = struct{}{}
+		}
+	}
+
+	corpus := loadCorpus(filepath.Join(root, "data", "eng_sentences.tsv"), targetWords)
+
 	list := make([]wordRecord, 0, len(rows)-1)
 
 	for _, row := range rows[1:] {
@@ -81,7 +95,7 @@ func main() {
 		list = append(list, wordRecord{
 			Word:            word,
 			Definition:      definition,
-			ExampleSentence: buildExampleSentence(word, definition),
+			ExampleSentence: buildExampleSentence(word, definition, corpus),
 		})
 	}
 
@@ -176,9 +190,13 @@ var exampleOverrides = map[string]string{
 	"without": "He left without his umbrella and got soaked.",
 }
 
-func buildExampleSentence(word, definition string) string {
+func buildExampleSentence(word, definition string, corpus map[string]string) string {
 	lowerWord := strings.ToLower(strings.TrimSpace(word))
 	if sentence, ok := exampleOverrides[lowerWord]; ok {
+		return sentence
+	}
+
+	if sentence, ok := corpus[lowerWord]; ok {
 		return sentence
 	}
 
@@ -262,4 +280,46 @@ func writeJSON(path string, payload any) error {
 	}
 	bytes = append(bytes, '\n')
 	return os.WriteFile(path, bytes, 0o644)
+}
+
+func loadCorpus(path string, targetWords map[string]struct{}) map[string]string {
+	out := make(map[string]string)
+
+	f, err := os.Open(path)
+	if err != nil {
+		log.Printf("corpus not found at %s, falling back to templates: %v", path, err)
+		return out
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := scanner.Text()
+		parts := strings.Split(line, "\t")
+		if len(parts) < 3 {
+			continue
+		}
+		sentence := strings.TrimSpace(parts[2])
+		
+		wordCount := 0
+		words := strings.FieldsFunc(strings.ToLower(sentence), func(r rune) bool {
+			return !unicode.IsLetter(r) && r != '-' && r != '\''
+		})
+		wordCount = len(words)
+
+		if wordCount < 4 || wordCount > 15 || len(sentence) > 100 {
+			continue
+		}
+
+		for _, w := range words {
+			if _, ok := targetWords[w]; ok {
+				existing, has := out[w]
+				if !has || len(sentence) < len(existing) {
+					out[w] = sentence
+				}
+			}
+		}
+	}
+
+	return out
 }
